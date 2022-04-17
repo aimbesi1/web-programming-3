@@ -1,0 +1,378 @@
+
+<!DOCTYPE html>
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<title>Conway test</title>
+
+<script type="application/javascript">
+// This is an implementation of Conway's Game of Life inside an HTML canvas element.
+// Press SPACE to process one step in the game.
+// Code by Tony Imbesi, 4/16/2022
+
+// Begin modified code from https://gamedev.cs.gsu.edu/~mweeks/parallax/platformer.html
+const INTERVAL = 500;
+var useInterval = false;    // Set to true to run the game on a time interval
+
+let canvas;
+let ctx;
+let coords;
+const MAXCOL = 30;         // dimension of the game board
+const MAXROW = 30;  
+const CANVASWIDTH = MAXCOL * 32;
+const CANVASHEIGHT = MAXROW * 32;
+
+let myInterval = null;
+
+var maxAge = 1;       
+var states = [];
+var world = [];
+var copy = [];
+var mouseX = 0;
+var mouseY = 0;
+
+function loadComplete() {
+    console.log("Load is complete."); 
+    canvas = document.getElementById("theCanvas");
+    ctx = canvas.getContext("2d");
+    coords = document.getElementById("coords");
+
+    // Begin modified code from http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
+    canvas.addEventListener('mousemove', function(evt) {
+        var mousePos = getMousePos(evt);
+        mouseX = mousePos.x;
+        mouseY = mousePos.y;
+        writeMessage(mouseX + ", " + mouseY);
+    });
+    canvas.addEventListener('click', function(evt) {
+        editCell();
+    })
+    // End modified code from http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
+    pageLoadComplete = true;
+    myInterval = self.setInterval(function(){check4all_loaded()}, 500);
+}
+
+
+var sideLength = 32; // Width and height of each sprite
+
+var pageLoadComplete = false;
+var img_loaded = false;
+var boxes       = new Image();    // boxes
+boxes.src       = "BW.png";
+
+boxes.onload = function() {
+  img_loaded = true;
+}
+
+
+// Begin modified code from http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
+function writeMessage(message) {
+    coords.innerHTML = message;
+}
+
+function getMousePos(evt) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+// End modified code from http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
+
+// This function is modified from https://www.w3schools.com/js/js_random.asp
+/**
+ * Gets a random integer in the range [min, max].
+ * @param min the minimum number
+ * @param max the maximum number
+ * @return the random integer
+ */
+ function getRand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// Begin code from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
+
+class Cell {
+    /**
+     * Constructs the sprite.
+     * @param {Number} x the initial x position
+     * @param {Number} y the initial y position
+     * @param {Number} w the width
+     * @param {Number} h the height
+     * @param {HTMLImageElement} img the image
+     * @param {Number} age the age of the cell
+     */
+    constructor (x, y, w, h, age) {
+        this.x = x;
+        this.y = y;
+        this.width = w;
+        this.height = h;
+        this.rightEdge = this.x + this.width;
+        this.bottomEdge = this.y + this.height;
+        this.age = age;
+        this.color = this.updateColor();
+    }
+
+    /**
+     * Update the cell's color.
+     */
+    updateColor() {
+        if (this.age == 1) {
+            this.color = "#ffffff";
+        }
+        else {
+            this.color = "#000000";
+        }
+    }
+}
+
+// Begin modified code from https://gamedev.cs.gsu.edu/~mweeks/Qbert_demo.html
+// Place boxes
+
+for (var r = 0; r < MAXROW; r++) {
+      for (var c = 0; c < MAXCOL; c++) {
+        var rand = getRand(0, maxAge);
+        states.push(rand);
+        var spr = new Cell(c * 32, r * 32, sideLength, sideLength, rand);
+        world.push(spr);
+        // console.log("Age added: " + states[states.length - 1]);
+        // console.log(spr.image.width);
+      }
+}
+
+// End modified code from https://gamedev.cs.gsu.edu/~mweeks/Qbert_demo.html
+
+// Update each cell in the world with new age values
+function updateWorld() {
+    for (var i = 0; i < world.length; i++) {
+        world[i].age = states[i];
+        world[i].updateColor();
+        // console.log("Ages array:" + states[i]);
+    }
+    // console.log('world update: ' + world[world.length - 1].age);
+}
+
+// Change the state of a cell by clicking on it.
+function editCell() {
+    var i = 0;
+    var found = false;
+    while (i < world.length && !found) {
+        // Check to see if the mouse's position is within the boundaries of a cell.
+        if (world[i].x <= mouseX && mouseX < world[i].rightEdge
+            && world[i].y <= mouseY && mouseY < world[i].bottomEdge) {
+            // Now change that cell's color.
+            if (world[i].age == 1) {
+                states[i] = 0;
+            }
+            else {
+                states[i] = 1;
+            }
+            found = true;
+        }
+        
+        i++;
+    }
+    eraseEverything();
+    updateWorld();
+    drawEverything();
+}
+
+/**
+ * Use a copy of the states array to update each cell's age.
+ */
+
+function updateState() {
+    copy = [];
+    states.forEach(e => {
+        copy.push(e);
+    }); // Save a copy of the states array
+    var aliveNeighbors = 0;
+    for (var r = 0; r < MAXROW; r++) {
+      for (var c = 0; c < MAXCOL; c++) {
+        aliveNeighbors = 0;
+        console.log("(" + r + ", " + c + ")");
+        // Position of current cell's age: states[r * MAXROW + c]
+        // Count the number of alive neighbors
+        if (r > 0) {
+            // console.log("Checking upper row for row " + r + ", column " + c);
+            
+            if (c > 0 && getCellAt(r - 1, c - 1) > 0) {
+                aliveNeighbors++;
+                console.log("Top left: " + getCellAt(r - 1, c - 1));
+            }
+            
+            if (getCellAt(r - 1, c) > 0) {
+                aliveNeighbors++;
+                console.log("Top middle: " + getCellAt(r - 1, c));
+            }
+            
+            if (c < MAXCOL - 1 && getCellAt(r - 1, c + 1) > 0) {
+                aliveNeighbors++;
+                console.log("Top right: " + getCellAt(r - 1, c + 1));
+            }
+        }
+        // console.log("Checking middle row for row " + r + ", column " + c);
+        
+        if (c > 0 && getCellAt(r, c - 1) > 0) {
+            aliveNeighbors++;
+            console.log("Middle left: " + getCellAt(r, c - 1));
+        }
+       
+        if (c < MAXCOL - 1 && getCellAt(r, c + 1) > 0) {
+            aliveNeighbors++;
+            console.log("Middle right: " + getCellAt(r, c + 1));
+        }
+            
+        if (r < MAXROW - 1) {
+            // console.log("Checking lower row for row " + r + ", column " + c);
+            
+            if (c > 0 && getCellAt(r + 1, c - 1) > 0) {
+                aliveNeighbors++;
+                console.log("Bottom left: " + getCellAt(r + 1, c - 1));
+            }
+            
+            if (getCellAt(r + 1, c) > 0) {
+                aliveNeighbors++;
+                console.log("Bottom middle: " + getCellAt(r + 1, c));
+            }
+           
+            if (c < MAXCOL - 1 && getCellAt(r + 1, c + 1) > 0) {
+                aliveNeighbors++;
+                console.log("Bottom right: " + getCellAt(r + 1, c + 1));
+            }
+                
+        }
+        console.log("Total alive neighbors: " + aliveNeighbors);
+        // Now update the cell's state based on the number of alive neighbors
+        // Each cell with one or no neighbors dies
+        if (aliveNeighbors <= 1) {
+            states[r * MAXCOL + c] = 0;
+        }
+        // Each cell with two neighbors survives
+        else if (aliveNeighbors == 2) {
+            // Do nothing
+        }
+        // Each cell with three neighbors becomes populated / survives
+        else if (aliveNeighbors == 3) {
+            if (copy[r * MAXCOL + c] == 0) {
+                // console.log("Cell placed");
+                states[r * MAXCOL + c] = 1;
+            }
+            else {
+                // console.log("Age is not 0: no cell placed");
+            }
+        }
+        // Each cell with four or more neighbors dies
+        else if (4 <= aliveNeighbors) {
+            states[r * MAXCOL + c] = 0;
+        }
+        // Check one cell specifically for debugging
+        // if (r == MAXROW - 1 && c == MAXCOL - 1 ) {
+        //     console.log('states array: ' + states[states.length - 1]);
+        // }
+      }
+    }
+    // states array should have updated age values based on data from the copied array
+}
+
+function getCellAt(row, column) {
+    return copy[row * MAXCOL + column];
+}
+
+
+// Begin code from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
+
+// Erase the entire canvas.
+function eraseEverything() {
+  ctx.clearRect(0, 0, CANVASWIDTH, CANVASHEIGHT);
+}
+
+function drawEverything() {  
+    // draw tiles
+    var count = 0;
+    for (var i = 0; i < world.length; i++) {
+        ctx.fillStyle = world[i].color;
+        ctx.fillRect(world[i].x, world[i].y, sideLength, sideLength);
+        count++;
+    //   console.log("Drawing at row " + (world[i].y / 32) + ", column" + (world[i].x / 32));
+    //   console.log("Last sprite column: " + world[i].spriteCol);
+    //   console.log("Last sprite age: " + world[i].age);
+    //   console.log("Compare to: " + states[i]);
+    }
+    console.log(count + " vs. " + (MAXROW * MAXCOL));
+}
+
+function Tick() {
+    eraseEverything();
+    updateState();
+    updateWorld();
+    drawEverything();
+    // clearInterval(myInterval);
+}
+// whenKeyPressed function modified from HW 9 code
+function whenKeyPressed(key) {
+    switch (key) {
+        case " ":  //  upper-left
+            Tick();
+        default:
+        // console.log(key);
+        break;
+    }
+}
+
+
+
+// Loading external resources is asynchronous. 
+// We cannot start until everything is loaded.
+// This function checks to see that everything loaded.
+function check4all_loaded() {
+  if (img_loaded && pageLoadComplete) {
+    // Everything has loaded.
+    // Stop the check-loaded interval
+    clearInterval(myInterval); // background color
+    eraseEverything();
+    drawEverything();
+    
+    // Start a game interval
+    if (useInterval)
+        myInterval = self.setInterval(function(){Tick()}, INTERVAL);
+  }
+}
+// End modified code from https://gamedev.cs.gsu.edu/~mweeks/parallax/platformer.html
+
+// Begin code from HW 9
+document['onkeydown'] = function(event) {
+    event = event || window.event;
+
+    // event.which is deprecated
+    //var key = event.which || event.cursor;
+    //whenKeyPressed_old(key);
+
+    var key = event.key;  // This also works, and returns a string
+    whenKeyPressed(key);
+};
+// End code from HW 9
+
+/**
+ * Start the game
+ */
+// startGame() {
+
+// }
+
+</script>
+
+</head>
+<body onload="loadComplete()" bgcolor="#000000" text="#ffffff">
+
+<script type="application/javascript">
+  // Begin modified code from https://gamedev.cs.gsu.edu/~mweeks/parallax/platformer.html
+  document.write('<center>');
+  document.write('<canvas id="theCanvas" tabindex="1" width="' + CANVASWIDTH
+    + '" height="' + CANVASHEIGHT + '"></canvas>');
+  document.write('</center>');
+  // End modified code from https://gamedev.cs.gsu.edu/~mweeks/parallax/platformer.html
+</script>
+
+<p id="coords"></p>
+</body>
+</html>
