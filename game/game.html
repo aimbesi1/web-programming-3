@@ -9,7 +9,6 @@
 // Press SPACE to process one step in the game.
 // Code by Tony Imbesi, 4/16/2022
 
-// Begin modified code from https://gamedev.cs.gsu.edu/~mweeks/parallax/platformer.html
 const INTERVAL = 500;
 var useInterval = false;    // Set to true to run the game on a time interval
 
@@ -89,7 +88,7 @@ function getMousePos(evt) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Begin code from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
+// Begin code modified from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
 
 class Cell {
     /**
@@ -138,8 +137,8 @@ for (var r = 0; r < MAXROW; r++) {
         // console.log(spr.image.width);
       }
 }
-
 // End modified code from https://gamedev.cs.gsu.edu/~mweeks/Qbert_demo.html
+// End code modified from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
 
 // Update each cell in the world with new age values
 function updateWorld() {
@@ -279,7 +278,7 @@ function getCellAt(row, column) {
 }
 
 
-// Begin code from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
+// Begin code modified from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
 
 // Erase the entire canvas.
 function eraseEverything() {
@@ -308,6 +307,7 @@ function Tick() {
     drawEverything();
     // clearInterval(myInterval);
 }
+// End code modified from https://gamedev.cs.gsu.edu/~aimbesi1/hw10/platformer.html
 // whenKeyPressed function modified from HW 9 code
 function whenKeyPressed(key) {
     switch (key) {
@@ -320,7 +320,7 @@ function whenKeyPressed(key) {
 }
 
 
-
+// Begin modified code from https://gamedev.cs.gsu.edu/~mweeks/parallax/platformer.html
 // Loading external resources is asynchronous. 
 // We cannot start until everything is loaded.
 // This function checks to see that everything loaded.
