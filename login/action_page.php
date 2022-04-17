@@ -8,4 +8,4 @@ echo'Hello '.$_SESSION['username'];
 ?>
 <link rel = "stylesheet" href = "login.css">
 <br>
-<a id = "value" href = "../conwaytest/conway_test.html">Let's play</a>
+<a id = "value" href = "../game/game.html">Let's play</a>
