@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <link rel = "stylesheet" href = "game.css">
 <title>Conway's Game of Life</title>
 
 <script type="application/javascript">
@@ -498,6 +499,8 @@ function createCanvas() {
 
 </head>
 <body onload="loadComplete()" bgcolor="#ffffff" text="#000000">
+    <h1>Conway's Game Of Life!</h1>
+    <h2>By: <span style = color:blue>Tony Imbesi</span>, <span style = color:red>Cammeron Manning</span>, & <span style = color:purple>Daniel Wekesa</span></h2>
 <div id="game">
 
 </div>
@@ -507,9 +510,10 @@ function createCanvas() {
     <p id="population">Current population:</p>
     <p id="generation">Generation:</p>
 </div>
-<div id="options">
-    <button onclick="startGame()">Start game</button>
-    <button onclick="stopGame()">Stop game</button>
+<div class = "design">
+<div class = "buttons" id="options">
+    <button class = "button1" onclick="startGame()">Start game</button>
+    <button class = "button2" onclick="stopGame()">Stop game</button>
     <button onclick="resetWorld(false)">Start over</button>
     <button onclick="resetWorld(true)">Random world</button>
     <div>
@@ -535,5 +539,6 @@ function createCanvas() {
     <button onclick="nextGenerationIterate()">+23 generations</button>
 </div>
 <img id="patternimg" src="">
+</div>
 </body>
 </html>
