@@ -9,7 +9,7 @@
 // Press SPACE to process one step in the game.
 // Code by Tony Imbesi, 4/16/2022
 
-const INTERVAL = 500;
+const INTERVAL = 300;
 var useInterval = false;    // Set to true to run the game on a time interval
 
 let canvas;
@@ -18,8 +18,11 @@ let coords;
 let patternSelect;
 var MAXCOL = 30;         // dimension of the game board
 var MAXROW = 30;  
-var CANVASWIDTH = MAXCOL * 32;
-var CANVASHEIGHT = MAXROW * 32;
+var sideLength = 32; // Width and height of each sprite
+var CANVASWIDTH = MAXCOL * sideLength;
+var CANVASHEIGHT = MAXROW * sideLength;
+var borderThickness = 1; // Thickness of grid outlines in pixels
+
 
 let myInterval = null;
 
@@ -67,13 +70,13 @@ class Cell {
 }
 
 function loadComplete() {
-    CANVASWIDTH = MAXCOL * 32;
-    CANVASHEIGHT = MAXROW * 32;
+    CANVASWIDTH = MAXCOL * sideLength;
+    CANVASHEIGHT = MAXROW * sideLength;
     createCanvas();
     console.log("Load is complete."); 
     canvas = document.getElementById("theCanvas");
     ctx = canvas.getContext("2d");
-    coords = document.getElementById("coords");
+    // coords = document.getElementById("coords");
 
     // Begin modified code from http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
     canvas.addEventListener('mousemove', function(evt) {
@@ -109,7 +112,7 @@ function loadComplete() {
 
 
 
-var sideLength = 32; // Width and height of each sprite
+
 
 var pageLoadComplete = false;
 var img_loaded = false;
@@ -122,9 +125,9 @@ boxes.onload = function() {
 
 
 // Begin modified code from http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
-function writeMessage(message) {
-    coords.innerHTML = message;
-}
+// function writeMessage(message) {
+//     coords.innerHTML = message;
+// }
 
 function getMousePos(evt) {
     var rect = canvas.getBoundingClientRect();
@@ -165,7 +168,7 @@ function resetWorld(randomize) {
             if (randomize)
                 rand = getRand(0, maxAge);
             states.push(rand);
-            var spr = new Cell(c * 32, r * 32, sideLength, sideLength, rand);
+            var spr = new Cell(c * sideLength, r * sideLength, sideLength, sideLength, rand);
             world.push(spr);
             // console.log("Age added: " + states[states.length - 1]);
             // console.log(spr.image.width);
@@ -390,19 +393,29 @@ function eraseEverything() {
   ctx.clearRect(0, 0, CANVASWIDTH, CANVASHEIGHT);
 }
 
-function drawEverything() {  
+function drawEverything() {
     // draw tiles
     var count = 0;
     for (var i = 0; i < world.length; i++) {
         ctx.fillStyle = world[i].color;
         ctx.fillRect(world[i].x, world[i].y, sideLength, sideLength);
         count++;
-    //   console.log("Drawing at row " + (world[i].y / 32) + ", column" + (world[i].x / 32));
+    //   console.log("Drawing at row " + (world[i].y / sideLength) + ", column" + (world[i].x / sideLength));
     //   console.log("Last sprite column: " + world[i].spriteCol);
     //   console.log("Last sprite age: " + world[i].age);
     //   console.log("Compare to: " + states[i]);
     }
     console.log(count + " vs. " + (MAXROW * MAXCOL));
+
+    // draw border
+    // Column lines
+    ctx.fillStyle = "#ffffff";
+    for (var c = 1; c < MAXCOL; c++) {
+        ctx.fillRect(c * sideLength, 0, borderThickness, CANVASHEIGHT);
+    }
+    for (var r = 1; r < MAXROW; r++) {
+        ctx.fillRect(0, r * sideLength, CANVASWIDTH, borderThickness);
+    }
 }
 
 function nextGeneration() {
@@ -488,7 +501,7 @@ function createCanvas() {
 
 </div>
 
-<p id="coords"></p>
+<!-- <p id="coords"></p> -->
 <div id="stats">
     <p id="population">Current population:</p>
     <p id="generation">Generation:</p>
