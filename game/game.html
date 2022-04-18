@@ -413,6 +413,7 @@ function drawEverything() {
     for (var c = 1; c < MAXCOL; c++) {
         ctx.fillRect(c * sideLength, 0, borderThickness, CANVASHEIGHT);
     }
+    // Row lines
     for (var r = 1; r < MAXROW; r++) {
         ctx.fillRect(0, r * sideLength, CANVASWIDTH, borderThickness);
     }
